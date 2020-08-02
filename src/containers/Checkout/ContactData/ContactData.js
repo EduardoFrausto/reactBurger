@@ -7,6 +7,7 @@ import Spinner from "../../../components/UI/Spinner/Spinner";
 import Input from '../../../components/UI/Input/Input';
 import withErrorHandler from '../../../hoc/WithErrorHandler/WithErrorHandler';
 import * as actionTypes from '../../../store/actions/index';
+import { updateObject, checkValidity } from '../../../shared/utility'
 
 import classes from './ContactData.css';
 
@@ -135,17 +136,14 @@ class ContactData extends Component {
     }
 
     inputChangedHandler = (event, inputId) => {
-        const updatedOrderForm = {
-            ...this.state.orderForm
-        }
-        const updatedFormElement = {
-            ...updatedOrderForm[inputId]
-        };
-        updatedFormElement.value = event.target.value;
-        updatedFormElement.valid = this.checkValidity(updatedFormElement.value, updatedFormElement.validation);
-        updatedFormElement.touched = true;
-        updatedOrderForm[inputId] = updatedFormElement;
-
+        const updatedFormElement = updateObject(this.state.orderForm[inputId], {
+            value: event.target.value,
+            valid: checkValidity(event.target.value, this.state.orderForm[inputId].validation),
+            touched: true,
+        });
+        const updatedOrderForm = updateObject(this.state.orderForm, {
+            [inputId]: updatedFormElement
+        });
         let formIsValid = true;
         for (let inputId in updatedOrderForm) {
             formIsValid = updatedOrderForm[inputId].valid && formIsValid;
@@ -154,7 +152,6 @@ class ContactData extends Component {
             orderForm: updatedOrderForm,
             formIsValid: formIsValid
         });
-
     }
 
     render() {
@@ -183,7 +180,6 @@ class ContactData extends Component {
                 <Button btnType="Success" disabled={!this.state.formIsValid}>Order</Button>
             </form>
         );
-        console.log(this.props.loading);
         if (this.props.loading) {
             form = <Spinner />;
         }
